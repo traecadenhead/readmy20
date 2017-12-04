@@ -2,18 +2,16 @@ import React from 'react';
 import { StackNavigator } from 'react-navigation';
 import BookList from '../screens/BookList';
 import Search from '../screens/Search';
+import BookDetail from '../screens/BookDetail';
 
 export const StackNav = StackNavigator({
     BookList: {
-        screen: BookList,
-        navigationOptions: {
-            title: 'My Book List'
-        }
+        screen: BookList
     },
     Search: {
-        screen: Search,
-        navigationOptions: {
-            title: 'Find a Book'
-        }
+        screen: Search
+    },
+    Detail: {
+        screen: BookDetail
     }
 });

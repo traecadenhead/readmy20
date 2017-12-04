@@ -1,17 +1,25 @@
 import React, { Component, PropTypes } from 'react';
 import { FlatList, StyleSheet, Text, View, Button } from 'react-native';
-import { books } from '../config/data'
+import { books } from '../config/data';
+import Book from '../components/Book';
 
 const extractKey = ({id}) => id
 
 export default class BookList extends Component{
 
+    static navigationOptions = () => ({
+        title: "My Book List"
+    });
+
     renderItem = ({item}) => {
         return (
-            <Text style={styles.row}>
-                {item.title} by {item.author}
-            </Text>
+            <Book book={item} openDetail={this.openDetail}/>
         )
+    }
+
+    openDetail = (book) => {
+        // TO DO: pass book to the detail screen
+        this.props.navigation.navigate('Detail', { book });
     }
 
     render(){
@@ -41,10 +49,5 @@ const styles = StyleSheet.create({
     },
     list: {
         flex: 1
-    },
-    row: {
-        padding: 15,
-        marginBottom: 5,
-        backgroundColor: 'skyblue'
     }
 })
