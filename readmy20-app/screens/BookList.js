@@ -1,9 +1,8 @@
 import React, { Component, PropTypes } from 'react';
 import { FlatList, StyleSheet, Text, View, Button } from 'react-native';
-import { books } from '../config/data';
 import Book from '../components/Book';
-
-const extractKey = ({id}) => id
+import EmptyBook from '../components/EmptyBook';
+import Progress from '../components/Progress';
 
 export default class BookList extends Component{
 
@@ -12,29 +11,48 @@ export default class BookList extends Component{
     });
 
     renderItem = ({item}) => {
-        return (
-            <Book book={item} openDetail={this.openDetail}/>
-        )
+        if(item.book != null){
+            return (
+                <Book status={item.status} number={item.number} book={item.book} openDetail={this.openDetail} updateBook={this.updateBook}/>
+            )
+        }
+        else{
+            return (
+                <EmptyBook number={item.number} findBook={this.findBook}/>
+            )
+        }
     }
 
-    openDetail = (book) => {
-        // TO DO: pass book to the detail screen
-        this.props.navigation.navigate('Detail', { book });
+    openDetail = (book, status) => {
+        this.props.navigation.navigate('Detail', { book, status: status });
+    }
+
+    findBook = () => {
+        this.props.navigation.navigate('Search');
+    }
+
+    updateBook = (book, status) => {
+        this.props.screenProps.updateBook(book, status);
+    }
+
+    updateGoal = (goal) => {
+        this.props.screenProps.updateGoal(goal);
     }
 
     render(){
         return (
             <View style={styles.container}>
+                <Progress 
+                    books={this.props.screenProps.books} 
+                    goal={this.props.screenProps.goal}
+                    updateGoal={this.updateGoal}
+                />
                 <FlatList
                     style={styles.list}
-                    data={books}
+                    data={this.props.screenProps.books}
                     renderItem={this.renderItem}
-                    keyExtractor={extractKey}
-                />
-                <Button 
-                    onPress={ () => this.props.navigation.navigate('Search')}
-                    title="Find a Book"
-                />
+                    keyExtractor={item => item.number}
+                />                
             </View>
         )
     }

@@ -8,9 +8,9 @@ const extractKey = ({id}) => id
 export default class Search extends Component{
 
     constructor(props){
-        super(props);
+        super(props);        
         this.state = {
-            searchableBooks: []
+            results: []
         };
     }
 
@@ -20,18 +20,22 @@ export default class Search extends Component{
 
     renderItem = ({item}) => {
         return (
-            <Book book={item} openDetail={this.openDetail}/>
+            <Book book={item} openDetail={this.openDetail} addBook={this.addBook}/>
         )
     }
 
+    addBook = (book) => {
+        this.props.screenProps.addBook(book);
+        this.props.navigation.navigate('BookList');
+    }
+
     openDetail = (book) => {
-        // TO DO: pass book to the detail screen
-        this.props.navigation.navigate('Detail');
+        this.props.navigation.navigate('Detail', { book });
     }
 
     searchBooks = (text) => {
         // TO DO: use this text to control search
-        this.setState({searchableBooks});
+        this.setState({results: searchableBooks});
     };   
 
     render(){ 
@@ -46,7 +50,7 @@ export default class Search extends Component{
                 />      
                 <FlatList
                     style={styles.list}
-                    data={this.state.searchableBooks}
+                    data={this.state.results}
                     renderItem={this.renderItem}
                     keyExtractor={extractKey}
                 />
