@@ -27,6 +27,10 @@ export default class BookList extends Component{
         this.props.navigation.navigate('Detail', { book, status: status });
     }
 
+    openSettings = () => {
+        this.props.navigation.navigate('Settings');
+    }
+
     findBook = () => {
         this.props.navigation.navigate('Search');
     }
@@ -35,17 +39,13 @@ export default class BookList extends Component{
         this.props.screenProps.updateBook(book, status);
     }
 
-    updateGoal = (goal) => {
-        this.props.screenProps.updateGoal(goal);
-    }
-
     render(){
         return (
             <View style={styles.container}>
                 <Progress 
                     books={this.props.screenProps.books} 
                     goal={this.props.screenProps.goal}
-                    updateGoal={this.updateGoal}
+                    openSettings={this.openSettings}
                 />
                 <FlatList
                     style={styles.list}

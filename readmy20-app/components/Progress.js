@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import { StyleSheet, Text, View, Dimensions, Picker } from 'react-native';
-import { Select, Option } from 'react-native-select-list';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default class Progress extends Component{
 
-    updateGoal = (selected) => {
-        this.props.updateGoal(selected);
+    openSettings = () => {
+        this.props.openSettings();
     }
 
     render(){
@@ -24,11 +24,16 @@ export default class Progress extends Component{
                 <Text style={styles.of}>
                     /
                 </Text> 
-                <Select selectStyle={styles.goal} onSelect={(selected) => this.updateGoal(selected)}>
-                    <Option value={5}>5</Option>
-                    <Option value={10}>10</Option>
-                    <Option value={20}>20</Option>
-                </Select>       
+                <Text style={styles.goal}>
+                    {this.props.goal}
+                </Text>   
+                <MaterialIcons 
+                    name="settings" 
+                    size={24} 
+                    color="black" 
+                    style={styles.button} 
+                    onPress={ () => this.props.openSettings() }
+                />
             </View>
         )
     }
@@ -54,6 +59,11 @@ const styles = StyleSheet.create({
         flex: 0
     },
     goal: {
-        flex: 1
+        flex: 0,
+        fontSize: 20
+    },
+    button: {
+        marginLeft: 10,
+        flex: 0
     }
 })

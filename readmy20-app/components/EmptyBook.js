@@ -18,7 +18,7 @@ export default class EmptyBook extends Component{
                     <Entypo 
                         name="add-to-list" 
                         size={32} 
-                        color="green" 
+                        color="skyblue" 
                         style={styles.button} 
                         onPress={ () => this.findBook() }
                     />
@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         flexDirection: 'column',
         borderBottomWidth: 5,
-        borderBottomColor: 'skyblue',
+        borderBottomColor: 'pink',
     },
     number: {
         fontSize: 20

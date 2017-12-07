@@ -3,6 +3,8 @@ import { StackNavigator } from 'react-navigation';
 import BookList from '../screens/BookList';
 import Search from '../screens/Search';
 import BookDetail from '../screens/BookDetail';
+import Settings from '../screens/Settings';
+import SignIn from '../screens/SignIn';
 
 export const StackNav = StackNavigator({
     BookList: {
@@ -13,5 +15,14 @@ export const StackNav = StackNavigator({
     },
     Detail: {
         screen: BookDetail
+    },
+    Settings: {
+        screen: Settings
+    }    
+});
+
+export const LoginNav = StackNavigator({
+    SignIn: {
+        screen: SignIn
     }
 });

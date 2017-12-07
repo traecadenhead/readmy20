@@ -19,17 +19,17 @@ export default class Book extends Component{
     render(){
         let button = null;
         if(this.props.number == null){
-            button = <Entypo name="add-to-list" size={32} color="green" style={styles.button} onPress={ () => this.addBook() } />
+            button = <Entypo name="add-to-list" size={32} color="skyblue" style={styles.button} onPress={ () => this.addBook() } />
         }
         else{
             if(this.props.status == "Complete"){
-                button = <MaterialCommunityIcons name="checkbox-marked-outline" size={32} color="green" style={styles.button} onPress={() => this.updateBook("Incomplete")} />
+                button = <MaterialCommunityIcons name="checkbox-marked-outline" size={32} color="skyblue" style={styles.button} onPress={() => this.updateBook("Incomplete")} />
             }
             else if(this.props.status == "Incomplete"){
-                button = <MaterialCommunityIcons name="checkbox-blank-outline" size={32} color="green" style={styles.button} onPress={() => this.updateBook("Complete")} />
+                button = <MaterialCommunityIcons name="checkbox-blank-outline" size={32} color="skyblue" style={styles.button} onPress={() => this.updateBook("Complete")} />
             }
             else if(this.props.status == "Recommended"){
-                button = <Entypo name="add-to-list" size={32} color="green" style={styles.button} onPress={() => this.updateBook("Incomplete")} />
+                button = <Entypo name="add-to-list" size={32} color="skyblue" style={styles.button} onPress={() => this.updateBook("Incomplete")} />
             }
         }
 
@@ -58,7 +58,7 @@ export default class Book extends Component{
                     <Entypo 
                         name="forward" 
                         size={32} 
-                        color="green" 
+                        color="skyblue" 
                         style={styles.button} 
                         onPress={ () => this.openDetail() }
                     />
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         flexDirection: 'column',
         borderBottomWidth: 5,
-        borderBottomColor: 'skyblue',
+        borderBottomColor: 'pink',
         flex: 1,
         width: Dimensions.get('window').width
     },

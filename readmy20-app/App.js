@@ -1,5 +1,5 @@
 import React from 'react';
-import { StackNav } from './config/router';
+import { LoginNav, StackNav } from './config/router';
 import { userData } from './config/data';
 
 export default class App extends React.Component {
@@ -51,25 +51,64 @@ export default class App extends React.Component {
     })
   };
 
-  updateGoal = (goal) => {
+  updateGoal = (newGoal) => {
+    let goal = newGoal;
+    //rebuild the list to match the number for the goal
+    let books = [];
+    let i = 0;
+    for(const item of this.state.books){   
+      if(item.book != null){ 
+        i++;
+        item.number = i;
+        books.push(item);        
+      }
+    }
+    if(i < goal){
+      while(i < goal){
+        i++;
+        const newBook = {
+          number: i
+        };
+        books.push(newBook);        
+      }
+    }
+    else if (i > goal){
+      goal = i;
+    }
     this.setState({
-      goal
+      goal,
+      books
     });
   }
 
+  storeUser = (user) => {
+    this.setState({user});
+  };
+
   render() {
 
-    const propsForScreen = {
-      books: this.state.books,
-      goal: this.state.goal,
-      addBook: this.addBook,
-      removeBook: this.removeBook,
-      updateBook: this.updateBook,
-      updateGoal: this.updateGoal
-    };
+    if(this.state.user != null){
+      const propsForScreen = {
+        books: this.state.books,
+        goal: this.state.goal,
+        addBook: this.addBook,
+        removeBook: this.removeBook,
+        updateBook: this.updateBook,
+        updateGoal: this.updateGoal
+      };
 
-    return (      
-      <StackNav screenProps={propsForScreen}/>
-    );
+      return (      
+        <StackNav screenProps={propsForScreen}/>
+      );
+    }
+    else{
+      const propsForScreen = {
+        storeUser: this.storeUser
+      };
+
+      return (
+        <LoginNav screenProps={propsForScreen}/>
+      );
+    }
   }
 }

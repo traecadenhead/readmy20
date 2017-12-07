@@ -1,4 +1,8 @@
 export const userData = {
+    user: {
+        name: "Trae Cadenhead",
+        id: "123"
+    },
     goal: 5,
     books: [        
         {

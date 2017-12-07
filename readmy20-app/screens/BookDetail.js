@@ -1,4 +1,4 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import { StyleSheet, Text, View, Image, ScrollView } from 'react-native';
 import { Entypo, MaterialCommunityIcons } from '@expo/vector-icons';
 
@@ -10,17 +10,17 @@ export default class BookDetail extends Component{
 
         addBook = (book) => {
             this.props.screenProps.addBook(book);
-            this.props.navigation.navigate('BookList');
+            this.props.navigation.goBack();
         }
 
         removeBook = (book) => {
             this.props.screenProps.removeBook(book);
-            this.props.navigation.navigate('BookList');
+            this.props.navigation.goBack();
         }
 
         updateBook = (book, status) => {
             this.props.screenProps.updateBook(book, status);
-            this.props.navigation.navigate('BookList');
+            this.props.navigation.goBack();
         }
     
         render(){
@@ -31,14 +31,14 @@ export default class BookDetail extends Component{
             let button = null;
             if(status != null){
                 if(status == 'Recommended'){
-                    button = <Entypo name="add-to-list" size={32} color="green" style={styles.button} onPress={ () => this.updateBook(book, 'Incomplete') } />
+                    button = <Entypo name="add-to-list" size={32} color="skyblue" style={styles.button} onPress={ () => this.updateBook(book, 'Incomplete') } />
                 }
                 else{
-                    button = <MaterialCommunityIcons name="playlist-remove" size={32} color="green" style={styles.button} onPress={ () => this.removeBook(book) } />
+                    button = <MaterialCommunityIcons name="playlist-remove" size={32} color="skyblue" style={styles.button} onPress={ () => this.removeBook(book) } />
                 }
             }
             else {                
-                button = <Entypo name="add-to-list" size={32} color="green" style={styles.button} onPress={ () => this.addBook(book) } />
+                button = <Entypo name="add-to-list" size={32} color="skyblue" style={styles.button} onPress={ () => this.addBook(book) } />
             }
 
             return (
