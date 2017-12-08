@@ -1,89 +1,96 @@
 import React from 'react';
 import { LoginNav, StackNav } from './config/router';
-import { userData } from './config/data';
+import api from './config/api';
 
 export default class App extends React.Component {
 
   constructor(props){
     super(props);
-    this.state = userData;
+    this.state = {
+      user: null,
+      goal: null,
+      books: []
+    }; 
   }
+
+  componentDidMount(){
+    this.storeFacebookUser({
+      "id": "10157423594048868",
+      "name": "Trae Cadenhead",
+    });
+  };
 
   addBook = (book) => {
     let books = [];
-    let bookAdded = false;
+    let bookToSave = null;
     for(const item of this.state.books){
-      if(item.book == null && !bookAdded){
+      if(item.book == null && bookToSave == null){
+        item.bookID = book.id;
+        item.userID = this.state.user.userID;
         item.book = book;
         item.status = "Incomplete";
-        bookAdded = true;
+        bookToSave = item;
       }
       books.push(item);
     }
     this.setState({
       books
-    })
+    });
+    if(bookToSave != null){
+      api.saveBook(bookToSave);
+    } 
   };
 
   removeBook = (book) => {
     let books = [];
     for(const item of this.state.books){
-      if(item.book != null && item.book.id == book.id){
+      if(item.book != null && item.bookID == book.id){
         item.book = null;
       }
       books.push(item);
     }
     this.setState({
       books
-    })
+    });
+    api.removeBook(book.id, this.state.user.userID);
   };
 
   updateBook = (book, status) => {
     let books = [];
+    let bookToSave = null;
     for(const item of this.state.books){
-      if(item.book != null && item.book.id == book.id){
+      if(item.book != null && item.bookID == book.id){
         item.status = status;
+        bookToSave = item;
       }      
       books.push(item);
     }
     this.setState({
       books
-    })
+    });
+    if(bookToSave != null){
+      api.saveBook(bookToSave);
+    }
   };
 
-  updateGoal = (newGoal) => {
-    let goal = newGoal;
-    //rebuild the list to match the number for the goal
-    let books = [];
-    let i = 0;
-    for(const item of this.state.books){   
-      if(item.book != null){ 
-        i++;
-        item.number = i;
-        books.push(item);        
-      }
-    }
-    if(i < goal){
-      while(i < goal){
-        i++;
-        const newBook = {
-          number: i
-        };
-        books.push(newBook);        
-      }
-    }
-    else if (i > goal){
-      goal = i;
-    }
-    this.setState({
-      goal,
-      books
-    });
+  updateGoal = (goalNumber) => {
+    api.createBookList(goalNumber, this.state.books).then(function({goal, books}){
+      this.setState({goal, books});
+      api.saveGoal(goal, this.state.userID);
+    }.bind(this));    
   }
 
-  storeUser = (user) => {
-    this.setState({user});
-  };
+  storeFacebookUser = (fbUser) => {
+    api.establishUser({userID: fbUser.id, name: fbUser.name, loginType: "Facebook"}).then(function({user, goal, books}){
+      this.setState({user});
+      api.createBookList(goal.number, books).then(function({goal, books}){
+        this.setState({
+          goal,
+          books
+        });
+      }.bind(this));
+    }.bind(this));    
+  }; 
 
   render() {
 
@@ -103,7 +110,7 @@ export default class App extends React.Component {
     }
     else{
       const propsForScreen = {
-        storeUser: this.storeUser
+        storeFacebookUser: this.storeFacebookUser
       };
 
       return (

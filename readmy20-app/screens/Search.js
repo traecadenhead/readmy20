@@ -1,7 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import { FlatList, StyleSheet, Text, View, TextInput, Button } from 'react-native';
 import { Constants, BarCodeScanner, Permissions } from 'expo';
-import { searchableBooks } from '../config/data';
+import { books } from '../config/data';
 import Book from '../components/Book';
 
 const extractKey = ({id}) => id
@@ -38,9 +38,21 @@ export default class Search extends Component{
         this.props.navigation.navigate('Detail', { book });
     }
 
-    searchBooks = (text) => {
-        // TO DO: use this text to control search
-        this.setState({results: searchableBooks});
+    searchBooks = (e) => {
+        console.warn(e);
+        /*let results = [];
+        if(text != undefined && text != null){
+            for (const book of books){
+                let result = book.title.toLowerCase().indexOf(text.toLowerCase());
+                if(result < 0){
+                    result = book.author.toLowerCase().indexOf(text.toLowerCase());
+                }
+                if(result >= 0){
+                    results.push(book);
+                }
+            }
+        }*/
+        this.setState({results: books});
     }
 
     setView = (view) => {
@@ -51,8 +63,13 @@ export default class Search extends Component{
     }
 
     searchCode = ({type, data}) => {
-        // TO DO: use this text to control search        
-        this.setState({results: searchableBooks, scanned: true});
+        let results = [];
+        for (const book of books){
+            if(book.id == data){
+                results.push(book);
+            }
+        }      
+        this.setState({results, scanned: true});
     }
 
     renderItem = ({item}) => {
@@ -87,7 +104,7 @@ export default class Search extends Component{
                     <TextInput 
                         style={styles.input}    
                         autoFocus={true}
-                        onSubmitEditing={(text) => this.searchBooks(text)}
+                        onSubmitEditing={(e) => this.searchBooks(e)}
                         returnKeyType={'search'} 
                     />      
                     <FlatList

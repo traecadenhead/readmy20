@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Dimensions } from 'react-native';
 import { Entypo } from '@expo/vector-icons';
 
 export default class EmptyBook extends Component{
@@ -35,6 +35,7 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         borderBottomWidth: 5,
         borderBottomColor: 'pink',
+        width: Dimensions.get('window').width
     },
     number: {
         fontSize: 20

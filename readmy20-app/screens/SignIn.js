@@ -21,8 +21,7 @@ export default class BookDetail extends Component{
                   // Get the user's name using Facebook's Graph API
                   const response = await fetch(`https://graph.facebook.com/me?access_token=${token}`);
                   const profile = await response.json();
-                  this.props.screenProps.storeUser(profile);
-                  this.props.navigation.goBack();
+                  this.props.screenProps.storeFacebookUser(profile);
                   break;
                 }
                 case 'cancel': {
@@ -40,6 +39,7 @@ export default class BookDetail extends Component{
                 }
               }
             } catch (e) {
+                console.error(e);
               Alert.alert(
                 'Oops!',
                 'Login failed!',
