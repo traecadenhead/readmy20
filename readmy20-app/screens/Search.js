@@ -2,9 +2,8 @@ import React, { Component, PropTypes } from 'react';
 import { FlatList, StyleSheet, Text, View, TextInput, Button } from 'react-native';
 import { Constants, BarCodeScanner, Permissions } from 'expo';
 import { books } from '../config/data';
+import goodreads from '../config/goodreads';
 import Book from '../components/Book';
-
-const extractKey = ({id}) => id
 
 export default class Search extends Component{
 
@@ -14,7 +13,8 @@ export default class Search extends Component{
             results: [],
             view: null,
             hasCameraPermission: null,
-            scanned: false
+            scanned: false,
+            query: null
         };
     }
 
@@ -38,10 +38,17 @@ export default class Search extends Component{
         this.props.navigation.navigate('Detail', { book });
     }
 
-    searchBooks = (e) => {
-        console.warn(e);
+    searchTitles = () => {
+        let text = this.state.query;
+        goodreads.search(text).then(function(results){
+            this.setState({results})
+        }.bind(this), function(err){
+            console.error(err);
+        });
+
         /*let results = [];
-        if(text != undefined && text != null){
+        if(text != null){
+            text = text.trim();
             for (const book of books){
                 let result = book.title.toLowerCase().indexOf(text.toLowerCase());
                 if(result < 0){
@@ -51,8 +58,8 @@ export default class Search extends Component{
                     results.push(book);
                 }
             }
-        }*/
-        this.setState({results: books});
+        }
+        ;*/
     }
 
     setView = (view) => {
@@ -63,13 +70,11 @@ export default class Search extends Component{
     }
 
     searchCode = ({type, data}) => {
-        let results = [];
-        for (const book of books){
-            if(book.id == data){
-                results.push(book);
-            }
-        }      
-        this.setState({results, scanned: true});
+        goodreads.search(data).then(function(results){
+            this.setState({results, scanned: true})
+        }.bind(this), function(err){
+            console.error(err);
+        });
     }
 
     renderItem = ({item}) => {
@@ -104,14 +109,19 @@ export default class Search extends Component{
                     <TextInput 
                         style={styles.input}    
                         autoFocus={true}
-                        onSubmitEditing={(e) => this.searchBooks(e)}
-                        returnKeyType={'search'} 
-                    />      
+                        onChangeText={(query) => this.setState({query})}
+                        returnKeyType={'done'} 
+                    />    
+                    <Button
+                        title="Search"
+                        style={styles.button}
+                        onPress={() => this.searchTitles()}
+                    />  
                     <FlatList
                         style={styles.list}
                         data={this.state.results}
                         renderItem={this.renderItem}
-                        keyExtractor={extractKey}
+                        keyExtractor={item => item.isbn}
                     />
                 </View>
             )
@@ -124,7 +134,7 @@ export default class Search extends Component{
                             style={styles.list}
                             data={this.state.results}
                             renderItem={this.renderItem}
-                            keyExtractor={extractKey}
+                            keyExtractor={item => item.isbn}
                         />
                         <Button 
                             title="Scan Another Code" 

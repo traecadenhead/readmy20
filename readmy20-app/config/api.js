@@ -28,16 +28,18 @@ export default class api{
             //rebuild the list to match the number for the goal
             let books = [];
             let i = 0;
-            for(const item of userBooks){   
-                i++;
-                item.number = i;
-                books.push(item);        
+            for(const item of userBooks){ 
+                if(item.book != null){  
+                    i++;
+                    item.number = i;
+                    books.push(item);     
+                }   
             }
             if(i < goal){
                 while(i < goal){
                     i++;
                     const newBook = {
-                    number: i
+                        number: i
                     };
                     books.push(newBook);        
                 }
@@ -53,15 +55,15 @@ export default class api{
         });    
     };
 
-    static saveGoal = (number, userID) => {
+    static saveGoal = (goal) => {
         return new Promise(function(resolve, reject){
             fetch(apiRoot + 'savegoal', {
                 method: 'POST',
-                headers: {
+                headers: { 
                     Accept: 'application/json',
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({number, userID})
+                body: JSON.stringify(goal)
             }).then(response => response.json())
             .then(responseJson => { 
                 resolve(responseJson);
@@ -101,7 +103,7 @@ export default class api{
                 },
                 body: JSON.stringify({bookID, userID}),
               }).then(response => response.json())
-              .then(response => { 
+              .then(responseJson => { 
                 resolve(responseJson);
               })
               .catch(err => {

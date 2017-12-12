@@ -25,7 +25,7 @@ export default class App extends React.Component {
     let bookToSave = null;
     for(const item of this.state.books){
       if(item.book == null && bookToSave == null){
-        item.bookID = book.id;
+        item.bookID = book.isbn;
         item.userID = this.state.user.userID;
         item.book = book;
         item.status = "Incomplete";
@@ -44,7 +44,7 @@ export default class App extends React.Component {
   removeBook = (book) => {
     let books = [];
     for(const item of this.state.books){
-      if(item.book != null && item.bookID == book.id){
+      if(item.book != null && item.book.isbn == book.isbn){
         item.book = null;
       }
       books.push(item);
@@ -52,14 +52,14 @@ export default class App extends React.Component {
     this.setState({
       books
     });
-    api.removeBook(book.id, this.state.user.userID);
+    api.removeBook(book.isbn, this.state.user.userID);
   };
 
   updateBook = (book, status) => {
     let books = [];
     let bookToSave = null;
     for(const item of this.state.books){
-      if(item.book != null && item.bookID == book.id){
+      if(item.book != null && item.book.isbn == book.isbn){
         item.status = status;
         bookToSave = item;
       }      
@@ -76,7 +76,7 @@ export default class App extends React.Component {
   updateGoal = (goalNumber) => {
     api.createBookList(goalNumber, this.state.books).then(function({goal, books}){
       this.setState({goal, books});
-      api.saveGoal(goal, this.state.userID);
+      api.saveGoal({number: goal, userID: this.state.user.userID});
     }.bind(this));    
   }
 
