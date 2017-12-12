@@ -7,6 +7,7 @@ const userBookSchema = new mongoose.Schema({
     userID: String,
     status: String,
     book: {
+		isbn: String,
         title: String,
         author: String,
         description: String,
