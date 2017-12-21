@@ -88,7 +88,8 @@ const styles = StyleSheet.create({
     number: {
         fontSize: 20,
         flex: 0,
-        width: 20
+        width: 25,
+        marginRight: 5
     },
     bookInfo: {
         flex: 1,

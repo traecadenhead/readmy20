@@ -1,7 +1,6 @@
 import React, { Component, PropTypes } from 'react';
-import { FlatList, StyleSheet, Text, View, TextInput, Button } from 'react-native';
+import { FlatList, StyleSheet, Text, View, TextInput, Button, Alert } from 'react-native';
 import { Constants, BarCodeScanner, Permissions } from 'expo';
-import { books } from '../config/data';
 import goodreads from '../config/goodreads';
 import Book from '../components/Book';
 
@@ -14,7 +13,8 @@ export default class Search extends Component{
             view: null,
             hasCameraPermission: null,
             scanned: false,
-            query: null
+            query: null,
+            searching: false
         };
     }
 
@@ -30,36 +30,37 @@ export default class Search extends Component{
     };    
 
     addBook = (book) => {
-        this.props.screenProps.addBook(book);
-        this.props.navigation.goBack();
+        goodreads.get(book.isbn).then(function(detail){
+            if(detail != null){
+                this.props.screenProps.addBook(detail);
+                this.props.navigation.goBack();
+            }
+        }.bind(this), function(err){
+            console.error(err);
+        });          
     }
 
     openDetail = (book) => {
-        this.props.navigation.navigate('Detail', { book });
+        goodreads.get(book.isbn).then(function(detail){
+            if(detail != null){
+                this.props.navigation.navigate('Detail', { book: detail });
+            }
+        }.bind(this), function(err){
+            console.error(err);
+        });        
     }
 
     searchTitles = () => {
+        this.setState({searching: true});
         let text = this.state.query;
         goodreads.search(text).then(function(results){
-            this.setState({results})
+            this.setState({results, searching: false});
+            if(results.length == 0){
+                Alert.alert("Sorry", "No results were found for your search. Please try a different phrase.");
+            }
         }.bind(this), function(err){
             console.error(err);
         });
-
-        /*let results = [];
-        if(text != null){
-            text = text.trim();
-            for (const book of books){
-                let result = book.title.toLowerCase().indexOf(text.toLowerCase());
-                if(result < 0){
-                    result = book.author.toLowerCase().indexOf(text.toLowerCase());
-                }
-                if(result >= 0){
-                    results.push(book);
-                }
-            }
-        }
-        ;*/
     }
 
     setView = (view) => {
@@ -70,8 +71,12 @@ export default class Search extends Component{
     }
 
     searchCode = ({type, data}) => {
-        goodreads.search(data).then(function(results){
-            this.setState({results, scanned: true})
+        this.setState({searching: true, scanned: true});
+        goodreads.search(data).then(function(results){            
+            this.setState({results, searching: false});
+            if(results.length == 0){
+                Alert.alert("Sorry", "No results were found for the code you scanned. You may alternately try searching by title instead.");
+            }
         }.bind(this), function(err){
             console.error(err);
         });
@@ -87,16 +92,18 @@ export default class Search extends Component{
         if(this.state.view == null){
             return (
                 <View style={styles.container}>
-                    <Button 
-                        title="Search by Title" 
-                        style={styles.button}
-                        onPress={() => this.setView('Search')}
-                    />
-                    <Button 
-                        title="Scan Book Code" 
-                        style={styles.button}
-                        onPress={() => this.setView('Scan')}
-                    />
+                    <View style={styles.buttonHolder}>
+                        <Button 
+                            title="Search by Title" 
+                            onPress={() => this.setView('Search')}
+                        />
+                    </View>
+                    <View style={styles.buttonHolder}>
+                        <Button 
+                            title="Scan Book Code" 
+                            onPress={() => this.setView('Scan')}
+                        />
+                    </View>
                 </View>
             )
         }
@@ -111,12 +118,19 @@ export default class Search extends Component{
                         autoFocus={true}
                         onChangeText={(query) => this.setState({query})}
                         returnKeyType={'done'} 
-                    />    
-                    <Button
-                        title="Search"
-                        style={styles.button}
-                        onPress={() => this.searchTitles()}
-                    />  
+                    /> 
+                    {
+                        this.state.searching ?
+                        <Text style={styles.status}>Searching...</Text>
+                        :
+                        <View style={styles.buttonHolder}>
+                            <Button
+                                title="Search"
+                                onPress={() => this.searchTitles()}
+                            /> 
+                        </View> 
+                    }  
+                    
                     <FlatList
                         style={styles.list}
                         data={this.state.results}
@@ -128,19 +142,25 @@ export default class Search extends Component{
         }
         else if (this.state.view == "Scan"){
             if(this.state.scanned){
-                return (
+                return (                    
                     <View style={styles.container}>
-                        <FlatList
-                            style={styles.list}
-                            data={this.state.results}
-                            renderItem={this.renderItem}
-                            keyExtractor={item => item.isbn}
-                        />
-                        <Button 
-                            title="Scan Another Code" 
-                            style={styles.button}
-                            onPress={() => this.setState({scanned: false})}
-                        />
+                        {
+                            this.state.searching ?
+                            <Text style={styles.status}>Searching...</Text>
+                            :
+                            <FlatList
+                                style={styles.list}
+                                data={this.state.results}
+                                renderItem={this.renderItem}
+                                keyExtractor={item => item.isbn}
+                            />
+                        }
+                        <View style={styles.buttonHolder}>
+                            <Button 
+                                title="Scan Another Code" 
+                                onPress={() => this.setState({scanned: false})}
+                            />
+                        </View>
                     </View>
                 )
             }
@@ -184,14 +204,18 @@ const styles = StyleSheet.create({
         height: 40,
         width: 300,
         borderWidth: 1,
-        paddingLeft: 10
+        paddingLeft: 10,
+        backgroundColor: 'white'
+    },
+    status: {
+        marginTop: 20
     },
     list: {
         flex: 1,
         marginTop: 20
     },
-    button: {
-        flex: 1,
-        marginBottom: 20
+    buttonHolder: {
+        flex: 0,
+        marginBottom: 10
     }
 })

@@ -10,9 +10,12 @@ const userBookSchema = new mongoose.Schema({
 		isbn: String,
         title: String,
         author: String,
-        description: String,
-        rating: String,
-        imageUrl: String
+        publisher: String,
+        year: Number,
+        pages: Number,
+        rating: Number,
+        imageUrl: String,
+		summary: String
     }
 });
 

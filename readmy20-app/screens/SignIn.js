@@ -5,7 +5,7 @@ import { Constants, Facebook } from 'expo';
 export default class BookDetail extends Component{     
 
         static navigationOptions = () => ({
-            title: "Sign In"
+            title: "Log In"
         });
 
         handleFacebookLogin = async () => {
@@ -52,7 +52,7 @@ export default class BookDetail extends Component{
             return (
                 <View style={styles.container}>
                     <Text style={styles.text}>
-                        To use this app, first you'll need to sign in.
+                        To use this app, first you'll need to log in.
                     </Text>
                     <Button 
                         title="Log In with Facebook"

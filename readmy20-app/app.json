@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "readmy20-app",
-    "description": "An empty new project",
-    "slug": "readmy20-app",
+    "name": "Read My 20",
+    "description": "A simple app to record the 20 (or more or less) books you read this year. Search books by title or scan the barcode of a book that you currently have in your hands.",
+    "slug": "readmy20",
     "privacy": "public",
     "sdkVersion": "23.0.0",
     "version": "1.0.0",

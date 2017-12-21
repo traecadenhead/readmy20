@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react';
-import { StyleSheet, Text, View, TextInput, Slider, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Slider, Dimensions, Button } from 'react-native';
 
 export default class Settings extends Component{
 
@@ -46,6 +46,12 @@ export default class Settings extends Component{
                     onSlidingComplete={(value) => this.updateGoal(value)}
                     onValueChange={(value) => this.showNumber(value)}
                 />
+                <View style={styles.buttonHolder}>
+                    <Button 
+                        title="Sign Out" 
+                        onPress={() => this.props.screenProps.signOut()}
+                    />
+                </View>
             </View>
         )
     }
@@ -77,5 +83,9 @@ const styles = StyleSheet.create({
         paddingLeft: 20,
         paddingRight: 20,
         height: 30
+    },
+    buttonHolder: {
+        flex: 1,
+        marginTop: 20
     }
 })

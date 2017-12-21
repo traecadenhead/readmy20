@@ -24,6 +24,7 @@ app.post('/establishUser', function(req, res){
 });
 
 app.post('/saveBook', function(req, res){
+	console.log(req.body);
     db.saveBook(req.body).then(function(book){
         return res.json(book);
     }, function(err){

@@ -14,10 +14,10 @@ export default class App extends React.Component {
   }
 
   componentDidMount(){
-    this.storeFacebookUser({
+    /*this.storeFacebookUser({
       "id": "10157423594048868",
       "name": "Trae Cadenhead",
-    });
+    });*/
   };
 
   addBook = (book) => {
@@ -49,9 +49,9 @@ export default class App extends React.Component {
       }
       books.push(item);
     }
-    this.setState({
-      books
-    });
+    api.createBookList(this.state.goal, books).then(function({goal, books}){
+      this.setState({books});
+    }.bind(this));
     api.removeBook(book.isbn, this.state.user.userID);
   };
 
@@ -92,6 +92,14 @@ export default class App extends React.Component {
     }.bind(this));    
   }; 
 
+  signOut = () => {
+    this.setState({
+      user: null,
+      goal: null,
+      books: []
+    });
+  };
+
   render() {
 
     if(this.state.user != null){
@@ -101,7 +109,8 @@ export default class App extends React.Component {
         addBook: this.addBook,
         removeBook: this.removeBook,
         updateBook: this.updateBook,
-        updateGoal: this.updateGoal
+        updateGoal: this.updateGoal,
+        signOut: this.signOut
       };
 
       return (      
