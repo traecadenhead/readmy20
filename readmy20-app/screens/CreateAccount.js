@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import { StyleSheet, Text, View, Button, Alert, TextInput } from 'react-native';
 
-export default class SignIn extends Component{     
+export default class CreateAccount extends Component{     
 
     constructor(props){
         super(props);        
         this.state = {
+            name: '',
             userID: '',
             password: '',
             loginType: 'phone'
@@ -13,40 +14,52 @@ export default class SignIn extends Component{
     }     
 
     static navigationOptions = () => ({
-        title: "Log In"
-    });
+        title: "Create Account"
+    });        
 
-    login = () => {
-        this.props.screenProps.loginUser(this.state);
+    createAccount = () => {
+        if(this.state.userID == ''){
+            Alert.alert("Hey Now", "Your phone number is a required field to create an account.");
+        }
+        else if(this.state.name == ''){
+            Alert.alert("Hey Now", "Your name is a required field to create an account.");
+        }
+        else if(this.state.password == ''){
+            Alert.alert("Hey Now", "Password is a required field to create an account.");
+        }
+        else{
+            this.props.screenProps.loginUser(this.state);
+        }
     };
 
     render(){
-
         return (
             <View style={styles.container}>
                 <Text style={styles.text}>
-                    Phone Number
+                    Your name
+                </Text>
+                <TextInput 
+                    style={styles.input}
+                    onChangeText={(name) => this.setState({name})}
+                />
+                <Text style={styles.text}>
+                    Your phone number (you'll use this to log in)
                 </Text>
                 <TextInput 
                     style={styles.input}
                     onChangeText={(userID) => this.setState({userID})}
                 />
                 <Text style={styles.text}>
-                    Password
+                    Your password
                 </Text>
                 <TextInput 
                     style={styles.input}
                     onChangeText={(password) => this.setState({password})}
                 />
                 <Button 
-                    title="Log In"
-                    style={styles.button}
-                    onPress={this.login}
-                />
-                <Button
                     title="Create Account"
-                    style={styles.create}
-                    onPress={this.props.navigation.navigate('CreateAccount')}
+                    style={styles.button}
+                    onPress={this.createAccount}
                 />
             </View>
         )

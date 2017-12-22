@@ -9,7 +9,8 @@ export default class App extends React.Component {
     this.state = {
       user: null,
       goal: null,
-      books: []
+      books: [],
+      friends: []
     }; 
   }
 
@@ -92,11 +93,24 @@ export default class App extends React.Component {
     }.bind(this));    
   }; 
 
+  loginUser = (logInUser) => {
+    api.loginUser(logInUser).then(function({user, goal, books, friends}){
+      this.setState({user, friends});
+      api.createBookList(goal.number, books).then(function({goal, books}){
+        this.setState({
+          goal,
+          books
+        });
+      }.bind(this));
+    }.bind(this)); 
+  };
+
   signOut = () => {
     this.setState({
       user: null,
       goal: null,
-      books: []
+      books: [],
+      friends: []
     });
   };
 
@@ -119,7 +133,8 @@ export default class App extends React.Component {
     }
     else{
       const propsForScreen = {
-        storeFacebookUser: this.storeFacebookUser
+        storeFacebookUser: this.storeFacebookUser,
+        loginUser: this.loginUser
       };
 
       return (

@@ -24,5 +24,8 @@ export const StackNav = StackNavigator({
 export const LoginNav = StackNavigator({
     SignIn: {
         screen: SignIn
+    },
+    CreateAccount: {
+        screen: CreateAccount
     }
 });

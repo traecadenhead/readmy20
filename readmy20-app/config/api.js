@@ -21,6 +21,25 @@ export default class api{
         });
     }
 
+    static loginUser = (user) => {
+        return new Promise(function(resolve, reject){
+            fetch(apiRoot + 'loginuser', {
+                    method: 'POST',
+                    headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                    body: JSON.stringify(user)  
+            }).then(response => response.json())
+            .then(responseJson => { 
+                resolve(responseJson);
+            })
+            .catch(err => {
+                resolve(err);
+            });
+        });
+    }
+
     static createBookList = (userGoal, userBooks) => {
         return new Promise(function(resolve, reject){
           try{

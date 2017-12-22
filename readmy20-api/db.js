@@ -1,11 +1,12 @@
 const User = require('./models/user');
 const Goal = require('./models/goal');
 const UserBook = require('./models/userbook');
+const Friend = require('./models/friend');
 
 const defaultGoal = 20;
 
 const getOrCreateUser = (user) => {
-    return new Promise(function(resolve, reject){    
+    return new Promise(function(resolve, reject){  
         User.findOne({userID: user.userID, loginType: user.loginType}, function(err, userResult){
             if(err){
                 reject(Error(err.message));
@@ -28,6 +29,45 @@ const getOrCreateUser = (user) => {
     });
 }
 module.exports.getOrCreateUser = getOrCreateUser;
+
+const loginUser = (user) => {
+    return new Promise(function(resolve, reject){  
+        if(user.name != undefined && user.name != null){
+            // create account
+            User.findOne({userID: user.userID, loginType: user.loginType}, function(err, userResult){
+                if(err){
+                    reject(Error(err.message));
+                }
+                if (userResult != null){                    
+                    resolve(userResult);
+                }
+                else{
+                    // create user
+                    const createUser = new User(user);
+                    createUser.save(function(err, result){
+                        if(err){
+                            reject(Error(err.message));
+                        }else{
+                            resolve(result);
+                        }
+                    });
+                }
+            });
+        }
+        else{
+            // login
+            User.findOne({userID: user.userID, loginType: user.loginType, password: user.password}, function(err, userResult){
+                if(err){
+                    reject(Error(err.message));
+                }
+                if (userResult != null){
+                    resolve(userResult);
+                }
+            });
+        }
+    });
+}
+module.exports.loginUser = loginUser;
 
 const getGoalOrDefault = (userID) => {
     return new Promise(function(resolve, reject){
@@ -151,3 +191,102 @@ const removeBook = (userID, bookID) => {
     });
 }
 module.exports.removeBook = removeBook;
+
+const saveFriend = (friend) => {
+    return new Promise(function(resolve, reject){
+        Friend.findOne({userID: friend.userID, friendID: friend.friendID}, function(err, friendResult){
+            if(err){
+                reject(Error(err.message));
+            }
+            else{
+                if(friendResult != null){
+                    friendResult.friendName = friend.friendName;
+                    friendResult.userName = friend.userName;
+                    friendResult.status = friend.status;
+                    friendResult.save(function(err, result){
+                        if(err){
+                            reject(Error(err.message));
+                        }
+                        else{
+                            resolve(result);
+                        }
+                    });
+                }
+                else{
+                    // make sure this friend is in db
+                    User.findOne({userID: friend.friendID}, function(err, userResult){
+                        if(err){
+                            reject(Error(err.message));
+                        }
+                        else{
+                            if(userResult != null){
+                                friend.status = "Accepted";
+                            }
+                            else{
+                                friend.status = "Invited";
+                            }
+                            userFriend = new Friend(friend);
+                            userFriend.save(function(err, saveResult){
+                                if(err){
+                                    reject(Error(err.message));
+                                }
+                                else{
+                                    resolve(saveResult);
+                                }
+                            });
+                        }
+                    });                    
+                }
+                
+            }
+        });
+    });
+}
+module.exports.saveFriend = saveFriend;
+
+const removeFriend = (userID, friendID) => {
+    return new Promise(function(resolve, reject){
+        Friend.findOneAndRemove({userID, friendID}, function(err, result){
+            if(err){
+                reject(Error(err.message));
+            }
+            else{
+                if(result != null){
+                    resolve(true);
+                }
+                else{
+                    resolve(false);
+                }
+            }
+        });
+    });
+}
+module.exports.removeFriend = removeFriend;
+
+const getInvites = (friendID) => {
+    return new Promise(function(resolve, reject){
+        Friend.find({friendID, status: "Invited"}, function(err, invites){
+            if(err){
+                reject(Error(err.message));
+            }
+            else{
+                resolve(invites);
+            }
+        });
+    });
+}
+module.exports.getInvites = getInvites;
+
+const getFriends = (userID) => {
+    return new Promise(function(resolve, reject){
+        Friend.find({userID, status: "Accepted"}, function(err, friends){
+            if(err){
+                reject(Error(err.message));
+            }
+            else{
+                resolve(friends);
+            }
+        });
+    });
+}
+module.exports.getFriends = getFriends;
