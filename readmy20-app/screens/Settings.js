@@ -48,7 +48,7 @@ export default class Settings extends Component{
                 />
                 <View style={styles.buttonHolder}>
                     <Button 
-                        title="Sign Out" 
+                        title="Log Out" 
                         onPress={() => this.props.screenProps.signOut()}
                     />
                 </View>

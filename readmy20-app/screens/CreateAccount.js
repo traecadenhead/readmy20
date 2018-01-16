@@ -35,32 +35,40 @@ export default class CreateAccount extends Component{
     render(){
         return (
             <View style={styles.container}>
-                <Text style={styles.text}>
-                    Your name
-                </Text>
-                <TextInput 
-                    style={styles.input}
-                    onChangeText={(name) => this.setState({name})}
+                <View style={styles.item}>
+                    <Text style={styles.text}>
+                        Your name
+                    </Text>
+                    <TextInput 
+                        style={styles.input}
+                        onChangeText={(name) => this.setState({name})}
                 />
-                <Text style={styles.text}>
-                    Your phone number (you'll use this to log in)
-                </Text>
-                <TextInput 
-                    style={styles.input}
-                    onChangeText={(userID) => this.setState({userID})}
-                />
-                <Text style={styles.text}>
-                    Your password
-                </Text>
-                <TextInput 
-                    style={styles.input}
-                    onChangeText={(password) => this.setState({password})}
-                />
-                <Button 
-                    title="Create Account"
-                    style={styles.button}
-                    onPress={this.createAccount}
-                />
+                </View>
+                <View style={styles.item}>
+                    <Text style={styles.text}>
+                        Your phone number (you'll use this to log in)
+                    </Text>
+                    <TextInput 
+                        style={styles.input}
+                        onChangeText={(userID) => this.setState({userID})}
+                    />
+                </View>
+                <View style={styles.item}>
+                    <Text style={styles.text}>
+                        Your password
+                    </Text>
+                    <TextInput 
+                        style={styles.input}
+                        onChangeText={(password) => this.setState({password})}
+                    />
+                </View>
+                <View style={styles.item}>
+                    <Button 
+                        title="Create Account"
+                        style={styles.button}
+                        onPress={this.createAccount}
+                    />
+                </View>
             </View>
         )
     }
@@ -75,13 +83,17 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         flexDirection: 'column'          
     },
-    text: {            
+    item: {
         flex: 1,
-        marginTop: 20
+        marginBottom: 20
+    },
+    text: {            
+        flex: 0,
+        marginBottom: 20
     },
     input: {
-        height: 40,
-        width: 300,
+        flex: 0,
+        height: 40,        
         borderWidth: 1,
         paddingLeft: 10,
         backgroundColor: 'white'

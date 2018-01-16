@@ -4,7 +4,9 @@ import BookList from '../screens/BookList';
 import Search from '../screens/Search';
 import BookDetail from '../screens/BookDetail';
 import Settings from '../screens/Settings';
+import Friends from '../screens/Friends';
 import SignIn from '../screens/SignIn';
+import CreateAccount from '../screens/CreateAccount';
 
 export const StackNav = StackNavigator({
     BookList: {
@@ -18,7 +20,10 @@ export const StackNav = StackNavigator({
     },
     Settings: {
         screen: Settings
-    }    
+    },
+    Friends: {
+        screen: Friends
+    } 
 });
 
 export const LoginNav = StackNavigator({

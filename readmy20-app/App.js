@@ -1,4 +1,5 @@
 import React from 'react';
+import { Alert } from 'react-native';
 import { LoginNav, StackNav } from './config/router';
 import api from './config/api';
 
@@ -15,10 +16,11 @@ export default class App extends React.Component {
   }
 
   componentDidMount(){
-    /*this.storeFacebookUser({
-      "id": "10157423594048868",
-      "name": "Trae Cadenhead",
-    });*/
+    this.loginUser({
+      userID: '9019216800',
+      password: 'test',
+      loginType: 'phone'
+    });
   };
 
   addBook = (book) => {
@@ -95,14 +97,36 @@ export default class App extends React.Component {
 
   loginUser = (logInUser) => {
     api.loginUser(logInUser).then(function({user, goal, books, friends}){
-      this.setState({user, friends});
-      api.createBookList(goal.number, books).then(function({goal, books}){
-        this.setState({
-          goal,
-          books
-        });
-      }.bind(this));
+      if(user != undefined && user != null){
+        this.setState({user, friends});
+        api.createBookList(goal.number, books).then(function({goal, books}){
+          this.setState({
+            goal,
+            books
+          });
+        }.bind(this));
+      }
+      else{
+        Alert.alert("You couldn't be logged in with the info you provided.");
+      }
     }.bind(this)); 
+  };
+
+  addFriend = (friend) => {
+      let friends = this.state.friends;
+      friends.push(friend);
+      this.setState({friends});
+  }; 
+
+  removeFriend = (phone) => {
+    let friends = [];
+    for(const item of this.state.friends){
+      if(item.friendID != phone){
+        friends.push(item);
+      }
+    }
+    this.setState({friends});
+    api.removeFriend(phone, this.state.user.userID);
   };
 
   signOut = () => {
@@ -118,12 +142,17 @@ export default class App extends React.Component {
 
     if(this.state.user != null){
       const propsForScreen = {
+        user: this.state.user,
         books: this.state.books,
         goal: this.state.goal,
+        friends: this.state.friends,        
+        textFriend: this.state.textFriend,
         addBook: this.addBook,
         removeBook: this.removeBook,
         updateBook: this.updateBook,
         updateGoal: this.updateGoal,
+        addFriend: this.addFriend,
+        removeFriend: this.removeFriend,
         signOut: this.signOut
       };
 

@@ -3,6 +3,7 @@ import { FlatList, StyleSheet, Text, View, Button } from 'react-native';
 import Book from '../components/Book';
 import EmptyBook from '../components/EmptyBook';
 import Progress from '../components/Progress';
+import Friends from '../components/Friends';
 
 export default class BookList extends Component{
 
@@ -31,6 +32,10 @@ export default class BookList extends Component{
         this.props.navigation.navigate('Settings');
     }
 
+    openFriends = () => {
+        this.props.navigation.navigate('Friends');
+    }
+
     findBook = () => {
         this.props.navigation.navigate('Search');
     }
@@ -42,6 +47,11 @@ export default class BookList extends Component{
     render(){
         return (
             <View style={styles.container}>
+                <Friends 
+                    friends={this.props.screenProps.friends} 
+                    openFriends={this.openFriends}
+                    style={styles.friends}
+                />
                 <Progress 
                     books={this.props.screenProps.books} 
                     goal={this.props.screenProps.goal}

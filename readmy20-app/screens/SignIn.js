@@ -17,37 +17,57 @@ export default class SignIn extends Component{
     });
 
     login = () => {
-        this.props.screenProps.loginUser(this.state);
+        if(this.state.userID == null || this.state.userID == ''){
+            Alert.alert("You forgot to enter your username.");
+        }
+        if(this.state.password == null || this.state.password == ''){
+            Alert.alert("You forgot to enter your password.");
+        }
+        else{
+            this.props.screenProps.loginUser(this.state);
+        }
+    };
+
+    openCreateAccount = () => {
+        this.props.navigation.navigate('CreateAccount');
     };
 
     render(){
 
         return (
             <View style={styles.container}>
-                <Text style={styles.text}>
-                    Phone Number
-                </Text>
-                <TextInput 
-                    style={styles.input}
-                    onChangeText={(userID) => this.setState({userID})}
-                />
-                <Text style={styles.text}>
-                    Password
-                </Text>
-                <TextInput 
-                    style={styles.input}
-                    onChangeText={(password) => this.setState({password})}
-                />
-                <Button 
-                    title="Log In"
-                    style={styles.button}
-                    onPress={this.login}
-                />
-                <Button
-                    title="Create Account"
-                    style={styles.create}
-                    onPress={this.props.navigation.navigate('CreateAccount')}
-                />
+                <View style={styles.item}>
+                    <Text style={styles.text}>
+                        Phone Number
+                    </Text>
+                    <TextInput 
+                        style={styles.input}
+                        onChangeText={(userID) => this.setState({userID})}
+                    />
+                </View>
+                <View style={styles.item}>
+                    <Text style={styles.text}>
+                        Password
+                    </Text>
+                    <TextInput 
+                        style={styles.input}
+                        onChangeText={(password) => this.setState({password})}
+                    />
+                </View>
+                <View style={styles.item}>
+                    <Button 
+                        title="Log In"
+                        style={styles.button}
+                        onPress={this.login}
+                    />
+                </View>
+                <View style={styles.item}>
+                    <Button
+                        title="Create Account"
+                        style={styles.create}
+                        onPress={this.openCreateAccount}
+                    />
+                </View>
             </View>
         )
     }
@@ -62,13 +82,17 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         flexDirection: 'column'          
     },
-    text: {            
+    item: {
         flex: 1,
-        marginTop: 20
+        marginBottom: 20
+    },
+    text: {            
+        flex: 0,
+        marginBottom: 20,
     },
     input: {
+        flex: 0,
         height: 40,
-        width: 300,
         borderWidth: 1,
         paddingLeft: 10,
         backgroundColor: 'white'

@@ -1,10 +1,11 @@
-const apiRoot = 'http://52.26.132.42:3000/';
+import { params } from '../config/params';
 
 export default class api{
 
     static establishUser = (user) => {
+        user.userID = user.userID.replace("(", "").replace(")", "").replace("-", "").replace(" ", "");
         return new Promise(function(resolve, reject){
-            fetch(apiRoot + 'establishuser', {
+            fetch(params.apiUrl + 'establishuser', {
                     method: 'POST',
                     headers: {
                     Accept: 'application/json',
@@ -22,8 +23,9 @@ export default class api{
     }
 
     static loginUser = (user) => {
+        user.userID = user.userID.replace("(", "").replace(")", "").replace("-", "").replace(" ", "");
         return new Promise(function(resolve, reject){
-            fetch(apiRoot + 'loginuser', {
+            fetch(params.apiUrl + 'loginuser', {
                     method: 'POST',
                     headers: {
                     Accept: 'application/json',
@@ -76,7 +78,7 @@ export default class api{
 
     static saveGoal = (goal) => {
         return new Promise(function(resolve, reject){
-            fetch(apiRoot + 'savegoal', {
+            fetch(params.apiUrl + 'savegoal', {
                 method: 'POST',
                 headers: { 
                     Accept: 'application/json',
@@ -95,7 +97,7 @@ export default class api{
 
     static saveBook = (book) => {
         return new Promise(function(resolve, reject){
-            fetch(apiRoot + 'savebook', {
+            fetch(params.apiUrl + 'savebook', {
                 method: 'POST',
                 headers: {
                   Accept: 'application/json',
@@ -110,17 +112,38 @@ export default class api{
                 reject(err);
               });
         });        
-      }
+    }
     
-      static removeBook = (bookID, userID) => {
-          return new Promise(function(resolve, reject){
-            fetch(apiRoot + 'removebook', {
+    static removeBook = (bookID, userID) => {
+        return new Promise(function(resolve, reject){
+        fetch(params.apiUrl + 'removebook', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({bookID, userID}),
+            }).then(response => response.json())
+            .then(responseJson => { 
+            resolve(responseJson);
+            })
+            .catch(err => {
+            reject(err);
+            });
+        });
+    }
+
+    static saveFriend = (friend) => {
+        friend.userID = friend.userID.replace("(", "").replace(")", "").replace("-", "").replace(" ", "");
+        friend.friendID = friend.friendID.replace("(", "").replace(")", "").replace("-", "").replace(" ", "");
+        return new Promise(function(resolve, reject){
+            fetch(params.apiUrl + 'savefriend', {
                 method: 'POST',
                 headers: {
                   Accept: 'application/json',
                   'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({bookID, userID}),
+                body: JSON.stringify(friend),
               }).then(response => response.json())
               .then(responseJson => { 
                 resolve(responseJson);
@@ -128,6 +151,28 @@ export default class api{
               .catch(err => {
                 reject(err);
               });
-          });
-      }
+        });        
+    }
+
+    static removeFriend = (friendID, userID) => {
+        friendID = friendID.replace("(", "").replace(")", "").replace("-", "").replace(" ", "");
+        userID = userID.replace("(", "").replace(")", "").replace("-", "").replace(" ", "");
+        return new Promise(function(resolve, reject){
+        fetch(params.apiUrl + 'removefriend', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({friendID, userID}),
+            }).then(response => response.json())
+            .then(responseJson => { 
+                resolve(responseJson);
+            })
+            .catch(err => {
+                reject(err);
+            });
+        });
+    }
+
 }
