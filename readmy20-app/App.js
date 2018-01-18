@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert } from 'react-native';
+import { Alert, AsyncStorage } from 'react-native';
 import { LoginNav, StackNav } from './config/router';
 import api from './config/api';
 
@@ -16,12 +16,37 @@ export default class App extends React.Component {
   }
 
   componentDidMount(){
-    this.loginUser({
-      userID: '9019216800',
-      password: 'test',
-      loginType: 'phone'
-    });
+    this.loadUser();
   };
+
+  async loadUser() {
+    try{
+      const userID = await AsyncStorage.getItem("userID");
+      const password = await AsyncStorage.getItem("password");
+      const loginType = await AsyncStorage.getItem("loginType");
+      if(userID != null){
+        this.loginUser({
+          userID,
+          password,
+          loginType
+        });
+      }
+    }
+    catch(error){
+      console.log(error);
+    } 
+  }
+
+  async storeUser(user){
+    try{
+      await AsyncStorage.setItem("userID", user.userID);
+      await AsyncStorage.setItem("password", user.password);
+      await AsyncStorage.setItem("loginType", user.loginType);
+    }
+    catch(error){
+      console.log(err);
+    }
+  }
 
   addBook = (book) => {
     let books = [];
@@ -105,6 +130,7 @@ export default class App extends React.Component {
             books
           });
         }.bind(this));
+        this.storeUser(user);
       }
       else{
         Alert.alert("You couldn't be logged in with the info you provided.");
