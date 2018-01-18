@@ -32,42 +32,74 @@ module.exports.getOrCreateUser = getOrCreateUser;
 
 const loginUser = (user) => {
     return new Promise(function(resolve, reject){  
-        if(user.name != undefined && user.name != null){
-            // create account
-            User.findOne({userID: user.userID, loginType: user.loginType}, function(err, userResult){
-                if(err){
-                    reject(Error(err.message));
-                }
-                if (userResult != null){                    
-                    resolve(userResult);
-                }
-                else{
-                    // create user
-                    const createUser = new User(user);
-                    createUser.save(function(err, result){
-                        if(err){
-                            reject(Error(err.message));
-                        }else{
-                            resolve(result);
-                        }
-                    });
-                }
-            });
-        }
-        else{
-            // login
-            User.findOne({userID: user.userID, loginType: user.loginType, password: user.password}, function(err, userResult){
-                if(err){
-                    reject(Error(err.message));
-                }
-                if (userResult != null){
-                    resolve(userResult);
-                }
-            });
-        }
+		try{
+			if(user.name != undefined && user.name != null){
+				console.log("creating account");
+				// create account
+				User.findOne({userID: user.userID, loginType: user.loginType}, function(err, userResult){
+					if(err){
+						reject(Error(err.message));
+					}
+					if (userResult != null){                    
+						resolve(userResult);
+					}
+					else{
+						// create user
+						const createUser = new User(user);
+						createUser.save(function(err, result){
+							if(err){
+								reject(Error(err.message));
+							}else{
+								resolve(result);
+							}
+						});
+					}
+				});
+			}
+			else{
+				// login
+				User.findOne({userID: user.userID, password: user.password, loginType: user.loginType}, function(err, userResult){
+					if(err){
+						reject(Error(err.message));
+					}
+					else{
+						resolve(userResult);
+					}
+				});
+			}
+		}
+		catch(e){
+			reject(e);
+		}
     });
 }
 module.exports.loginUser = loginUser;
+
+const getUser = (userID) => {
+    return new Promise(function(resolve, reject){  
+        User.findOne({userID}, function(err, user){
+            if(err){
+                reject(Error(err.message));
+            }
+            if (user != null){
+				getGoalOrDefault(userID).then(function(goal){
+					if(goal != null){
+						getBooks(userID).then(function(books){
+							resolve({user, goal, books});
+						});
+					}
+					else{
+						resolve(null);
+					}
+				});
+            }
+            else{
+                resolve(null);
+            }
+        });
+    });
+}
+module.exports.getUser = getUser;
 
 const getGoalOrDefault = (userID) => {
     return new Promise(function(resolve, reject){
@@ -130,9 +162,12 @@ const saveGoal = (goal) => {
 }
 module.exports.saveGoal = saveGoal;
 
-const getBooks = (userID) => {
+const getBooks = (userID, year = null) => {
     return new Promise(function(resolve, reject){
-        UserBook.find({userID}, function(err, books){
+        if(year == null){
+            year = new Date().getFullYear();
+        }
+        UserBook.find({userID, year}, function(err, books){
             if(err){
                 reject(Error(err.message));
             }
@@ -159,6 +194,8 @@ const saveBook = (book) => {
                 else{
                     userBook = new UserBook(book);
                 }
+                // save year on book
+                userBook.year = new Date().getFullYear();
                 userBook.save(function(err, result){
                     if(err){
                         reject(Error(err.message));
@@ -202,7 +239,9 @@ const saveFriend = (friend) => {
                 if(friendResult != null){
                     friendResult.friendName = friend.friendName;
                     friendResult.userName = friend.userName;
-                    friendResult.status = friend.status;
+					if(friend.status != null && friend.status != ''){
+						friendResult.status = friend.status;
+					}
                     friendResult.save(function(err, result){
                         if(err){
                             reject(Error(err.message));

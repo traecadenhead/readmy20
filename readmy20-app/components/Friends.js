@@ -10,7 +10,7 @@ export default class Friends extends Component{
 
     render(){
         return (
-            <View style={styles.container}>
+            <View style={styles.container}> 
                 <Text style={styles.completed}>
                     {this.props.friends.length}
                 </Text>

@@ -7,6 +7,7 @@ import Settings from '../screens/Settings';
 import Friends from '../screens/Friends';
 import SignIn from '../screens/SignIn';
 import CreateAccount from '../screens/CreateAccount';
+import FriendBookList from '../screens/FriendBookList';
 
 export const StackNav = StackNavigator({
     BookList: {
@@ -23,7 +24,10 @@ export const StackNav = StackNavigator({
     },
     Friends: {
         screen: Friends
-    } 
+    },
+    FriendBookList: {
+        screen: FriendBookList
+    }
 });
 
 export const LoginNav = StackNavigator({

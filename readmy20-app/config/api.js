@@ -3,7 +3,7 @@ import { params } from '../config/params';
 export default class api{
 
     static establishUser = (user) => {
-        user.userID = user.userID.replace("(", "").replace(")", "").replace("-", "").replace(" ", "");
+        user.userID = api.cleanPhone(user.userID);
         return new Promise(function(resolve, reject){
             fetch(params.apiUrl + 'establishuser', {
                     method: 'POST',
@@ -23,7 +23,7 @@ export default class api{
     }
 
     static loginUser = (user) => {
-        user.userID = user.userID.replace("(", "").replace(")", "").replace("-", "").replace(" ", "");
+        user.userID = api.cleanPhone(user.userID);
         return new Promise(function(resolve, reject){
             fetch(params.apiUrl + 'loginuser', {
                     method: 'POST',
@@ -34,10 +34,16 @@ export default class api{
                     body: JSON.stringify(user)  
             }).then(response => response.json())
             .then(responseJson => { 
-                resolve(responseJson);
+                if(responseJson.user == undefined || responseJson.user == null){
+                    console.warn("invalid login");
+                    reject(new Error("Invalid login"));
+                }
+                else{
+                    resolve(responseJson);
+                }
             })
             .catch(err => {
-                resolve(err);
+                reject(err);
             });
         });
     }
@@ -134,8 +140,8 @@ export default class api{
     }
 
     static saveFriend = (friend) => {
-        friend.userID = friend.userID.replace("(", "").replace(")", "").replace("-", "").replace(" ", "");
-        friend.friendID = friend.friendID.replace("(", "").replace(")", "").replace("-", "").replace(" ", "");
+        friend.userID = api.cleanPhone(friend.userID);
+        friend.friendID = api.cleanPhone(friend.friendID);
         return new Promise(function(resolve, reject){
             fetch(params.apiUrl + 'savefriend', {
                 method: 'POST',
@@ -155,8 +161,8 @@ export default class api{
     }
 
     static removeFriend = (friendID, userID) => {
-        friendID = friendID.replace("(", "").replace(")", "").replace("-", "").replace(" ", "");
-        userID = userID.replace("(", "").replace(")", "").replace("-", "").replace(" ", "");
+        friendID = api.cleanPhone(friendID);
+        userID = api.cleanPhone(userID);
         return new Promise(function(resolve, reject){
         fetch(params.apiUrl + 'removefriend', {
             method: 'POST',
@@ -175,4 +181,45 @@ export default class api{
         });
     }
 
+    static getUser = (userID) => {
+        userID = api.cleanPhone(userID);
+        return new Promise(function(resolve, reject){
+            fetch(params.apiUrl + 'getUser/' + userID, {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                }
+                }).then(response => response.json())
+                .then(responseJson => { 
+                    resolve(responseJson);
+                })
+                .catch(err => {
+                    reject(err);
+                });
+        });
+    }
+
+    static cleanPhone = (number) => {
+        const chars = number.split('');
+        let num = "";
+        for(const n of chars){
+            const p = parseInt(n);
+            if(p != isNaN && p >= 0){
+                num += n;
+            }
+        }
+        return num;
+
+        /*const replaceChars = ["(", ")", "-", " "];
+        for(const r of replaceChars){
+            number = number.replace(r, "");
+        }
+        if(parseInt(number) == isNaN){
+            return number.slice(0, 2) + number.slice(4);
+        }
+        else{
+            return number;
+        }*/
+    };
 }

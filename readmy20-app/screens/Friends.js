@@ -10,7 +10,8 @@ export default class Friends extends Component{
     constructor(props){
         super(props);        
         this.state = {
-            contacts: []
+            contacts: [],
+            loading: true
         };
     };
 
@@ -24,51 +25,85 @@ export default class Friends extends Component{
 
     async getContacts () {
         const permission = await Permissions.askAsync(Permissions.CONTACTS);
-        if(permission.status !== 'granted'){
-            // permission was denied
-            return;
-        }
-        const contacts = await Contacts.getContactsAsync({
-            fields: [
-                Contacts.PHONE_NUMBERS
-            ], pageSize: 1000, pageOffset: 0
-        });
-        let contactList = [];
-        if(contacts.total > 0){
-            console.warn("loop contacts");
-            for(const item of contacts){
-                if(item.phoneNumbers.length > 0){
-                    let phone = null;
-                    for(const p of item.phoneNumbers){
-                        if(p.label == "iPhone"){
-                            phone = p.number;
-                            break;
-                        }                        
-                    }
-                    if(phone == null){
+        if(permission.status == 'granted'){
+            const contacts = await Contacts.getContactsAsync({
+                fields: [
+                    Contacts.PHONE_NUMBERS
+                ], pageSize: 1000, pageOffset: 0
+            });
+            let contactList = [];
+            let loadedNumbers = [];
+            if(contacts.total > 0){
+                let i = 0;
+                for(const item of contacts.data){
+                    if(item.phoneNumbers.length > 0){
+                        let phone = null;
                         for(const p of item.phoneNumbers){
-                            if(p.label == "mobile"){
+                            if(p.label == "iPhone"){
                                 phone = p.number;
                                 break;
                             }                        
                         }
+                        if(phone == null){
+                            for(const p of item.phoneNumbers){
+                                if(p.label == "mobile"){
+                                    phone = p.number;
+                                    break;
+                                }                        
+                            }
+                        }
+                        if(phone == null){
+                            for(const p of item.phoneNumbers){
+                                if(p.label == "cell"){
+                                    phone = p.number;
+                                    break;
+                                }                        
+                            }
+                        }
+                        if(phone == null){
+                            phone = item.phoneNumbers[0].number;
+                        }
+                        if(loadedNumbers.indexOf(phone) < 0){
+                            let isFriend = false;
+                            const cleanPhone = api.cleanPhone(phone);
+                            if(cleanPhone.length == 10){
+                                for(const friend of this.props.screenProps.friends){
+                                    if(friend.friendID == cleanPhone){
+                                        isFriend = true;
+                                        break;
+                                    }
+                                }
+                                const contact = {
+                                    name: item.name,
+                                    phone,
+                                    isFriend,
+                                    id: i
+                                };
+                                loadedNumbers.push(phone);
+                                contactList.push(contact);
+                                i++;
+                            }
+                        }
+                    }           
+                }
+                // show friends first
+                let items = [];
+                for(const item of contactList){
+                    if(item.isFriend){
+                        items.push(item);
                     }
-                    if(phone == null){
-                        phone = item.phoneNumbers[0].number;
+                }
+                for(const item of contactList){
+                    if(!item.isFriend){
+                        items.push(item);
                     }
-                    const contact = {
-                        name: item.name,
-                        phone
-                    };
-                    contactList.push(contact);
-                }                
+                }
+                this.setState({contacts: items, loading: false});
             }
-            console.warn("set state");
-            this.setState({contacts: contactList});
-        }
-        else{
-            Alert.alert("Sorry, we couldn't find any contacts.");
-        }        
+            else{
+                Alert.alert("Sorry, we couldn't find any contacts.");
+            }  
+        }      
     };
 
     addFriend = (contact) => {
@@ -81,6 +116,14 @@ export default class Friends extends Component{
         api.saveFriend(friend).then(function(savedFriend){
         if(savedFriend.status == "Accepted"){
             this.props.screenProps.addFriend(savedFriend);
+            let contacts = [];
+            for(const item of this.state.contacts){
+                if(api.cleanPhone(item.phone) == savedFriend.friendID){
+                    item.isFriend = true;
+                }
+                contacts.push(item);                
+            }
+            this.setState({contacts});
             Alert.alert(savedFriend.friendName + " has been added to your friends list.");
         }
         else{
@@ -97,24 +140,23 @@ export default class Friends extends Component{
 
     removeFriend = (contact) => {
         this.props.screenProps.removeFriend(contact.phone);
+        let contacts = [];
         for(const item of this.state.contacts){
             if(contact.phone == item.phone){
                 item.isFriend = false;
             }
+            contacts.push(item);
         }
         this.setState({contacts});
     };
 
+    viewFriend = (contact) => {
+        this.props.navigation.navigate('FriendBookList', {friendID: api.cleanPhone(contact.phone), friendName: contact.name});
+    };
+
     renderItem = ({item}) => {
-        item.isFriend = false;
-        for(const friend of this.props.screenProps.friends){
-            if(friend.friendID == item.phone){
-                item.isFriend = true;
-                break;
-            }
-        }
         return (
-            <Contact contact={item} addFriend={this.addFriend} removeFriend={this.removeFriend}/>
+            <Contact contact={item} addFriend={this.addFriend} removeFriend={this.removeFriend} viewFriend={this.viewFriend} />
         )
     }
 
@@ -124,12 +166,17 @@ export default class Friends extends Component{
                 <Text style={styles.text}>
                     Click a contact to add them as a friend. If they are not a current app user, you will be prompted to text them an invite to the app.
                 </Text>
+                {this.state.loading 
+                ?
+                <Text style={styles.loading}>Loading contacts...</Text> 
+                :
                 <FlatList
                     style={styles.list}
                     data={this.state.contacts}
                     renderItem={this.renderItem}
-                    keyExtractor={item => item.phone}
-                />   
+                    keyExtractor={item => item.id}
+                />  
+                }                 
             </View>
         )
     }
@@ -148,6 +195,9 @@ const styles = StyleSheet.create({
         marginLeft: 20,
         marginRight: 20,
         marginBottom: 20
+    },
+    loading: {
+        flex: 1
     },
     list: {
         flex: 1

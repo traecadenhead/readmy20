@@ -6,6 +6,7 @@ const userBookSchema = new mongoose.Schema({
     bookID: String,
     userID: String,
     status: String,
+    year: Number,
     book: {
 		isbn: String,
         title: String,

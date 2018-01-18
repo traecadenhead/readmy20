@@ -25,7 +25,10 @@ app.post('/establishUser', function(req, res){
 });
 
 app.post('/loginUser', function(req, res){
-    db.getOrCreateUser(req.body).then(function(user){
+    db.loginUser(req.body).then(function(user){
+		if(user == null){
+			return res.json(user);
+		}
         db.getGoalOrDefault(user.userID).then(function(goal){
             db.getBooks(user.userID).then(function(books){
                 if(req.body.name != undefined && req.body.name != null){
@@ -122,6 +125,14 @@ app.post('/saveFriend', function(req, res){
 
 app.post('/removeFriend', function(req, res){
     db.removeFriend(req.body.userID, req.body.friendID).then(function(result){
+        return res.json(result);
+    }, function(err){
+        return res.status(500).json({message: err.message});
+    });
+});
+
+app.get('/getUser/:id', function(req, res){
+	db.getUser(req.params.id).then(function(result){
         return res.json(result);
     }, function(err){
         return res.status(500).json({message: err.message});

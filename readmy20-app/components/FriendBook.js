@@ -1,30 +1,23 @@
 import React, { Component } from 'react';
 import { StyleSheet, Text, View, Dimensions } from 'react-native';
-import { Entypo, MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
+import { Entypo, MaterialCommunityIcons } from '@expo/vector-icons';
 
-export default class Contact extends Component{
+export default class FriendBook extends Component{
 
-    addFriend = () => {
-        this.props.addFriend(this.props.contact);
-    }
-
-    removeFriend = () => {
-        this.props.removeFriend(this.props.contact);
-    }
-
-    viewFriend = () => {
-        this.props.viewFriend(this.props.contact);
+    openDetail = () => {
+        this.props.openDetail(this.props.book);
     }
 
     render(){
-        let button = null;   
-        let viewButton = null;     
-        if(!this.props.contact.isFriend){
-            button = <Entypo name="add-to-list" size={32} color="skyblue" style={styles.button} onPress={ () => this.addFriend() } />
+        let button = null;
+        if(this.props.status == "Complete"){
+            button = <MaterialCommunityIcons name="checkbox-marked-outline" size={32} color="skyblue" style={styles.button} />
         }
-        else{
-            button = <MaterialCommunityIcons name="playlist-remove" size={32} color="skyblue" style={styles.button} onPress={ () => this.removeFriend() } />
-            viewButton = <FontAwesome name="list" size={32} color="skyblue" style={styles.button} onPress={ () => this.viewFriend() } />
+        else if(this.props.status == "Incomplete"){
+            button = <MaterialCommunityIcons name="checkbox-blank-outline" size={32} color="skyblue" style={styles.button} />
+        }
+        else if(this.props.status == "Recommended"){
+            button = <Entypo name="add-to-list" size={32} color="skyblue" style={styles.button} />
         }
 
         return (
@@ -32,16 +25,22 @@ export default class Contact extends Component{
                 <View style={styles.textContainer}>
                     <View style={styles.bookInfo}>
                         <Text style={styles.title}>
-                            {this.props.contact.name}
+                            {this.props.book.title}
                         </Text>   
                         <Text style={styles.author}>
-                            {this.props.contact.phone}
+                            {this.props.book.author}
                         </Text>
                     </View>
                 </View>
-                <View style={styles.buttons}>
-                    {button}  
-                    {viewButton}
+                <View style={styles.buttons}> 
+                    {button}      
+                    <Entypo 
+                        name="forward" 
+                        size={32} 
+                        color="skyblue" 
+                        style={styles.button} 
+                        onPress={ () => this.openDetail() }
+                    />
                 </View>                
             </View>
         )
@@ -64,6 +63,12 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingRight: 20,
         width: Dimensions.get('window').width
+    },
+    number: {
+        fontSize: 20,
+        flex: 0,
+        width: 25,
+        marginRight: 5
     },
     bookInfo: {
         flex: 1,

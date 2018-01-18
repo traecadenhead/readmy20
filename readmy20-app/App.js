@@ -109,7 +109,9 @@ export default class App extends React.Component {
       else{
         Alert.alert("You couldn't be logged in with the info you provided.");
       }
-    }.bind(this)); 
+    }.bind(this), function(err){
+      Alert.alert("You couldn't be logged in with the info you provided.");
+    }); 
   };
 
   addFriend = (friend) => {
@@ -121,7 +123,7 @@ export default class App extends React.Component {
   removeFriend = (phone) => {
     let friends = [];
     for(const item of this.state.friends){
-      if(item.friendID != phone){
+      if(item.friendID != api.cleanPhone(phone)){
         friends.push(item);
       }
     }
