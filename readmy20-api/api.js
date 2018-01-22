@@ -11,80 +11,31 @@ app.use(parser.json());
 
 const db = require('./db');
 
-// deprecated
-app.post('/establishUser', function(req, res){
-    db.getOrCreateUser(req.body).then(function(user){
-        db.getGoalOrDefault(user.userID).then(function(goal){
-            db.getBooks(user.userID).then(function(books){
-                return res.json({user, goal, books});
-            });            
-        });
+const authRequest = function(req, res, next){
+    if(req.url == '/loginUser' || req.url == '/createUser'){
+        next();
+    }
+    db.verifyAuth(req.header("Authorization")).then(function(user){
+        res.locals.user = user;
+        next();
+    }, function(err){
+        return res.status(401).json({message: err.message});
+    });	
+};
+
+app.use(authRequest);
+
+app.post('/createuser', function(req, res){
+    db.createUser(req.body).then(function(data){
+        return res.json(data);
     }, function(err){
         return res.status(500).json({message: err.message});
     });
 });
 
 app.post('/loginUser', function(req, res){
-    db.loginUser(req.body).then(function(user){
-		if(user == null){
-			return res.json(user);
-		}
-        db.getGoalOrDefault(user.userID).then(function(goal){
-            db.getBooks(user.userID).then(function(books){
-                if(req.body.name != undefined && req.body.name != null){
-                    // create account
-                    db.getInvites(user.userID).then(function(invites){
-                        let i = 0;
-                        let friends = [];
-                        if(invites.length > 0){
-                            for(let friend of invites){
-                                // mark as accepted friend
-                                friend.friendName = user.name;
-                                friend.status = "Accepted";
-                                db.saveFriend(friend).then(function(){
-                                    // make this person a friend of the user as well 
-                                    var userFriend = {
-                                        userID: user.userID,
-                                        userName: user.name,
-                                        friendID: friend.userID,
-                                        friendName: friend.userName,
-                                        status: "Accepted"
-                                    };
-                                    db.saveFriend(userFriend).then(function(result){
-                                        friends.push(result);
-                                        i++;
-                                        if(i == invites.length){
-                                            return res.json({user, goal, books, friends});
-                                        }
-                                    }, function(err){
-                                        return res.status(500).json({message: err.message});
-                                    });
-                                }, function(err){
-                                    return res.status(500).json({message: err.message});
-                                });                                
-                            }
-                        }
-                        else{
-                            return res.json({user, goal, books, friends});
-                        }
-                    }, function(err){
-                        return res.status(500).json({message: err.message});
-                    });
-                }
-                else{
-                    // login
-                    db.getFriends(user.userID).then(function(friends){
-                        return res.json({user, goal, books, friends});
-                    }, function(err){
-                        return res.status(500).json({message: err.message});
-                    });
-                }
-            }, function(err){
-                return res.status(500).json({message: err.message});
-            });                       
-        }, function(err){
-            return res.status(500).json({message: err.message});
-        });
+    db.loginUser(req.body).then(function(data){
+		return res.json(data);
     }, function(err){
         return res.status(500).json({message: err.message});
     });
@@ -132,7 +83,16 @@ app.post('/removeFriend', function(req, res){
 });
 
 app.get('/getUser/:id', function(req, res){
-	db.getUser(req.params.id).then(function(result){
+    db.getUser(req.params.id).then(function(result){
+        return res.json(result);
+    }, function(err){
+        return res.status(500).json({message: err.message});
+    });
+});
+
+app.get('/getAuthenticatedUser', function(req, res){
+    const user = req.res.locals.user;
+    db.getUser(user.userID).then(function(result){
         return res.json(result);
     }, function(err){
         return res.status(500).json({message: err.message});

@@ -2,53 +2,64 @@ import React from 'react';
 import { Alert, AsyncStorage } from 'react-native';
 import { LoginNav, StackNav } from './config/router';
 import api from './config/api';
+import appState from './config/appState';
 
 export default class App extends React.Component {
 
   constructor(props){
     super(props);
-    this.state = {
-      user: null,
-      goal: null,
-      books: [],
-      friends: []
-    }; 
+    this.state = appState.getInitialState(); 
   }
 
   componentDidMount(){
-    this.loadUser();
+    appState.loadAuthenticatedUser().then(function(data){
+      this.establishUser(data);
+    }.bind(this), function(err){
+      // user is not authenticated
+    });
   };
 
-  async loadUser() {
-    try{
-      const userID = await AsyncStorage.getItem("userID");
-      const password = await AsyncStorage.getItem("password");
-      const loginType = await AsyncStorage.getItem("loginType");
-      if(userID != null){
-        this.loginUser({
-          userID,
-          password,
-          loginType
-        });
-      }
-    }
-    catch(error){
-      console.log(error);
-    } 
-  }
+  createUser = (userToCreate) => {
+    appState.createUser(userToCreate).then(function(data){
+      this.establishUser(data);
+    }.bind(this), function(err){
+      Alert.alert("Your account couldn't be created with the info you provided.");
+    });
+  };
 
-  async storeUser(user){
-    try{
-      await AsyncStorage.setItem("userID", user.userID);
-      await AsyncStorage.setItem("password", user.password);
-      await AsyncStorage.setItem("loginType", user.loginType);
-    }
-    catch(error){
+  loginUser = (logInUser) => {
+    appState.loginUser(loginUser).then(function(data){
+      this.establishUser(data);
+    }.bind(this), function(err){
+      Alert.alert("You couldn't be logged in with the info you provided.");
+    });
+  };
+
+  establishUser = (data) => {
+    this.setState({user: data.user, friends: data.friends});
+    appState.createBookList(data.goal.number, data.books).then(function({goal, books}){
+      this.setState({
+        goal,
+        books
+      });
+    }.bind(this));
+  };
+
+  signOut = () => {
+    appState.signOutUser().then(function(){
+      this.setState({
+        user: null,
+        goal: null,
+        books: [],
+        friends: []
+      });
+    }.bind(this), function(err){
       console.log(err);
-    }
-  }
+    });    
+  };
 
-  addBook = (book) => {
+  addBook = (book) => {    
+
     let books = [];
     let bookToSave = null;
     for(const item of this.state.books){
@@ -106,38 +117,6 @@ export default class App extends React.Component {
       this.setState({goal, books});
       api.saveGoal({number: goal, userID: this.state.user.userID});
     }.bind(this));    
-  }
-
-  storeFacebookUser = (fbUser) => {
-    api.establishUser({userID: fbUser.id, name: fbUser.name, loginType: "Facebook"}).then(function({user, goal, books}){
-      this.setState({user});
-      api.createBookList(goal.number, books).then(function({goal, books}){
-        this.setState({
-          goal,
-          books
-        });
-      }.bind(this));
-    }.bind(this));    
-  }; 
-
-  loginUser = (logInUser) => {
-    api.loginUser(logInUser).then(function({user, goal, books, friends}){
-      if(user != undefined && user != null){
-        this.setState({user, friends});
-        api.createBookList(goal.number, books).then(function({goal, books}){
-          this.setState({
-            goal,
-            books
-          });
-        }.bind(this));
-        this.storeUser(user);
-      }
-      else{
-        Alert.alert("You couldn't be logged in with the info you provided.");
-      }
-    }.bind(this), function(err){
-      Alert.alert("You couldn't be logged in with the info you provided.");
-    }); 
   };
 
   addFriend = (friend) => {
@@ -157,17 +136,7 @@ export default class App extends React.Component {
     api.removeFriend(phone, this.state.user.userID);
   };
 
-  signOut = () => {
-    this.setState({
-      user: null,
-      goal: null,
-      books: [],
-      friends: []
-    });
-  };
-
   render() {
-
     if(this.state.user != null){
       const propsForScreen = {
         user: this.state.user,

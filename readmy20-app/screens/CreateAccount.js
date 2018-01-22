@@ -28,7 +28,7 @@ export default class CreateAccount extends Component{
             Alert.alert("Hey Now", "Password is a required field to create an account.");
         }
         else{
-            this.props.screenProps.loginUser(this.state);
+            this.props.screenProps.createUser(this.state);
         }
     };
 

@@ -2,71 +2,109 @@ const User = require('./models/user');
 const Goal = require('./models/goal');
 const UserBook = require('./models/userbook');
 const Friend = require('./models/friend');
+const Token = require('./models/token');
+const jwt = require('jsonwebtoken');
 
 const defaultGoal = 20;
+const tokenKey = "2138723";
 
-const getOrCreateUser = (user) => {
-    return new Promise(function(resolve, reject){  
-        User.findOne({userID: user.userID, loginType: user.loginType}, function(err, userResult){
-            if(err){
-                reject(Error(err.message));
-            }
-            if (userResult != null){
-                resolve(userResult);
-            }
-            else{
-                // create user
-                const createUser = new User(user);
-                createUser.save(function(err, result){
-                    if(err){
-                        reject(Error(err.message));
-                    }else{
-                        resolve(result);
-                    }
-                });
-            }
-        });
-    });
-}
-module.exports.getOrCreateUser = getOrCreateUser;
-
-const loginUser = (user) => {
+const createUser = (userToCreate) => {
     return new Promise(function(resolve, reject){  
 		try{
-			if(user.name != undefined && user.name != null){
-				console.log("creating account");
-				// create account
-				User.findOne({userID: user.userID, loginType: user.loginType}, function(err, userResult){
-					if(err){
-						reject(Error(err.message));
-					}
-					if (userResult != null){                    
-						resolve(userResult);
-					}
-					else{
-						// create user
-						const createUser = new User(user);
-						createUser.save(function(err, result){
-							if(err){
-								reject(Error(err.message));
-							}else{
-								resolve(result);
-							}
-						});
-					}
-				});
-			}
-			else{
-				// login
-				User.findOne({userID: user.userID, password: user.password, loginType: user.loginType}, function(err, userResult){
-					if(err){
-						reject(Error(err.message));
-					}
-					else{
-						resolve(userResult);
-					}
-				});
-			}
+            User.findOne({userID: userToCreate.userID}, function(err, userResult){
+                if(err){
+                    reject(Error(err.message));
+                }
+                if (userResult != null){                    
+                    reject(Error("user already exists"));
+                }
+                else{
+                    const user = new User(userToCreate);
+                    user.save(function(err, result){
+                        if(err){
+                            reject(Error(err.message));
+                        }else{
+                            getGoalOrDefault(user.userID).then(function(goal){
+                                getInvites(user.userID).then(function(invites){
+                                    let i = 0;
+                                    let friends = [];
+                                    const books = [];
+                                    const token = generateToken(user.userID);
+                                    if(invites.length > 0){
+                                        for(let friend of invites){
+                                            // mark as accepted friend
+                                            friend.friendName = user.name;
+                                            friend.status = "Accepted";
+                                            saveFriend(friend).then(function(){
+                                                // make this person a friend of the user as well 
+                                                var userFriend = {
+                                                    userID: user.userID,
+                                                    userName: user.name,
+                                                    friendID: friend.userID,
+                                                    friendName: friend.userName,
+                                                    status: "Accepted"
+                                                };
+                                                saveFriend(userFriend).then(function(result){
+                                                    friends.push(result);
+                                                    i++;
+                                                    if(i == invites.length){
+                                                        resolve({user, goal, books, friends, token});
+                                                    }
+                                                }, function(err){
+                                                    reject(err);
+                                                });
+                                            }, function(err){
+                                                reject(err);
+                                            });                                
+                                        }
+                                    }
+                                    else{
+                                        resolve({user, goal, books, friends, token});
+                                    }
+                                }, function(err){
+                                    reject(err);
+                                });                    
+                            }, function(err){
+                                reject(err);
+                            });
+                            resolve(result);
+                        }
+                    });
+                }
+            });
+		}
+		catch(e){
+			reject(e);
+		}
+    });
+}
+module.exports.createUser = createUser;
+
+const loginUser = (userToLogin) => {
+    return new Promise(function(resolve, reject){  
+		try{
+            User.findOne({userID: userToLogin.userID, password: userToLogin.password, loginType: userToLogin.loginType}, function(err, user){
+                if(err){
+                    reject(Error(err.message));
+                }
+                else{
+                    if(user == null){
+                        resolve(user);
+                    }
+                    getGoalOrDefault(user.userID).then(function(goal){
+                        getBooks(user.userID).then(function(books){
+                            getFriends(user.userID).then(function(friends){
+                                const token = generateToken(user.userID);
+                                resolve({user, goal, books, friends, token});
+                            }, function(err){
+                               reject(err);
+                            });        
+                        });             
+                    }, function(err){
+                        reject(err);
+                    });
+                }
+            });
 		}
 		catch(e){
 			reject(e);
@@ -74,6 +112,39 @@ const loginUser = (user) => {
     });
 }
 module.exports.loginUser = loginUser;
+
+const generateToken = (userID) => {
+    return jwt.sign({userID}, tokenKey);
+}
+
+const verifyAuth = (auth) => {
+    return new Promise(function(resolve, reject){
+        if(auth != undefined && auth != null){
+            const tokenStr = auth.replace("Bearer ", "");
+            const decoded = jwt.verify(tokenStr, tokenKey);
+            if(decoded.userID != null && decoded.userID != ''){
+                User.findOne({userID: decoded.userID}, function(err, user){
+                    if(err){
+                        reject(Error(err.message));
+                    }
+                    if(user != null){
+                        resolve(user);
+                    }
+                    else{
+                        reject(Error("invalid userID"));
+                    }
+                });
+            }
+            else{
+                reject(Error("invalid userID"));
+            }
+        }
+        else{
+            reject(Error("request not authenticated"));
+        }
+    });
+}
+module.exports.verifyAuth = verifyAuth;
 
 const getUser = (userID) => {
     return new Promise(function(resolve, reject){  
@@ -85,13 +156,21 @@ const getUser = (userID) => {
 				getGoalOrDefault(userID).then(function(goal){
 					if(goal != null){
 						getBooks(userID).then(function(books){
-							resolve({user, goal, books});
-						});
+                            getFriends(userID).then(function(friends){
+                                resolve({user, goal, books, friends});
+                            }, function(err){
+                                reject(err);
+                            });
+						}, function(err){
+                            reject(err);
+                        });
 					}
 					else{
 						resolve(null);
 					}
-				});
+				}, function(err){
+                    reject(err);
+                });
             }
             else{
                 resolve(null);

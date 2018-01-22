@@ -1,202 +1,128 @@
 import { params } from '../config/params';
+import { AsyncStorage } from 'react-native';
 
 export default class api{
 
-    static establishUser = (user) => {
-        user.userID = api.cleanPhone(user.userID);
-        return new Promise(function(resolve, reject){
-            fetch(params.apiUrl + 'establishuser', {
-                    method: 'POST',
-                    headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                    body: JSON.stringify(user)  
-            }).then(response => response.json())
-            .then(responseJson => { 
-                resolve(responseJson);
-            })
-            .catch(err => {
-                resolve(err);
-            });
-        });
-    }
-
     static loginUser = (user) => {
-        user.userID = api.cleanPhone(user.userID);
         return new Promise(function(resolve, reject){
-            fetch(params.apiUrl + 'loginuser', {
-                    method: 'POST',
-                    headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                    body: JSON.stringify(user)  
-            }).then(response => response.json())
-            .then(responseJson => { 
-                if(responseJson.user == undefined || responseJson.user == null){
-                    console.warn("invalid login");
-                    reject(new Error("Invalid login"));
-                }
-                else{
-                    resolve(responseJson);
-                }
-            })
-            .catch(err => {
+            user.userID = api.cleanPhone(user.userID);
+            api.makeAPIRequest('loginUser', "POST", user).then(function(data){
+                resolve(data);
+            }, function(err){
+                reject(err);
+            });
+        }); 
+    };
+
+    static createUser = (user) => {
+        return new Promise(function(resolve, reject){
+            user.userID = api.cleanPhone(user.userID);
+            api.makeAPIRequest('createUser', "POST", user).then(function(data){
+                resolve(data);
+            }, function(err){
                 reject(err);
             });
         });
-    }
-
-    static createBookList = (userGoal, userBooks) => {
-        return new Promise(function(resolve, reject){
-          try{
-            let goal = userGoal;
-            //rebuild the list to match the number for the goal
-            let books = [];
-            let i = 0;
-            for(const item of userBooks){ 
-                if(item.book != null){  
-                    i++;
-                    item.number = i;
-                    books.push(item);     
-                }   
-            }
-            if(i < goal){
-                while(i < goal){
-                    i++;
-                    const newBook = {
-                        number: i
-                    };
-                    books.push(newBook);        
-                }
-            }
-            else if (i > goal){
-              goal = i;
-            }     
-            resolve({goal, books});
-          }
-          catch(e){
-            reject(e);
-          }
-        });    
     };
 
     static saveGoal = (goal) => {
         return new Promise(function(resolve, reject){
-            fetch(params.apiUrl + 'savegoal', {
-                method: 'POST',
-                headers: { 
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(goal)
-            }).then(response => response.json())
-            .then(responseJson => { 
-                resolve(responseJson);
-            })
-            .catch(err => {
+            api.makeAPIRequest('saveGoal', "POST", goal).then(function(data){
+                resolve(data);
+            }, function(err){
                 reject(err);
             });
-        });
+        }); 
     };
 
     static saveBook = (book) => {
         return new Promise(function(resolve, reject){
-            fetch(params.apiUrl + 'savebook', {
-                method: 'POST',
-                headers: {
-                  Accept: 'application/json',
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(book),
-              }).then(response => response.json())
-              .then(responseJson => { 
-                resolve(responseJson);
-              })
-              .catch(err => {
+            api.makeAPIRequest('saveBook', "POST", book).then(function(data){
+                resolve(data);
+            }, function(err){
                 reject(err);
-              });
-        });        
+            });
+        });    
     }
     
     static removeBook = (bookID, userID) => {
         return new Promise(function(resolve, reject){
-        fetch(params.apiUrl + 'removebook', {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({bookID, userID}),
-            }).then(response => response.json())
-            .then(responseJson => { 
-            resolve(responseJson);
-            })
-            .catch(err => {
-            reject(err);
+            api.makeAPIRequest('removeBook', "POST", {bookID, userID: api.cleanPhone(userID)}).then(function(data){
+                resolve(data);
+            }, function(err){
+                reject(err);
             });
         });
     }
 
     static saveFriend = (friend) => {
-        friend.userID = api.cleanPhone(friend.userID);
-        friend.friendID = api.cleanPhone(friend.friendID);
         return new Promise(function(resolve, reject){
-            fetch(params.apiUrl + 'savefriend', {
-                method: 'POST',
-                headers: {
-                  Accept: 'application/json',
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(friend),
-              }).then(response => response.json())
-              .then(responseJson => { 
-                resolve(responseJson);
-              })
-              .catch(err => {
+            friend.userID = api.cleanPhone(friend.userID);
+            friend.friendID = api.cleanPhone(friend.friendID);
+            api.makeAPIRequest('saveFriend', "POST", friend).then(function(data){
+                resolve(data);
+            }, function(err){
                 reject(err);
-              });
-        });        
+            });
+        });      
     }
 
     static removeFriend = (friendID, userID) => {
-        friendID = api.cleanPhone(friendID);
-        userID = api.cleanPhone(userID);
         return new Promise(function(resolve, reject){
-        fetch(params.apiUrl + 'removefriend', {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({friendID, userID}),
-            }).then(response => response.json())
-            .then(responseJson => { 
-                resolve(responseJson);
-            })
-            .catch(err => {
+            api.makeAPIRequest('removeFriend', "POST", {friendID: api.cleanPhone(friendID), userID: api.cleanPhone(userID)}).then(function(data){
+                resolve(data);
+            }, function(err){
                 reject(err);
             });
         });
     }
 
     static getUser = (userID) => {
-        userID = api.cleanPhone(userID);
         return new Promise(function(resolve, reject){
-            fetch(params.apiUrl + 'getUser/' + userID, {
-                method: 'GET',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
+            api.makeAPIRequest('getUser/' + api.cleanPhone(userID)).then(function(data){
+                resolve(data);
+            }, function(err){
+                reject(err);
+            });
+        });
+    }
+
+    static getAuthenticatedUser = () => {
+        return new Promise(function(resolve, reject){
+            api.makeAPIRequest('getAuthenticatedUser').then(function(data){
+                resolve(data);
+            }, function(err){
+                reject(err);
+            });
+        });
+    }
+
+    static makeAPIRequest = (url, type = "GET", data = null) => {
+        return new Promise(function(resolve, reject){
+            AsyncStorage.getItem("token").then(function(token){
+                let options = {
+                    method: type,
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json'
+                    }                    
+                };
+                if(token != undefined && token != null){
+                    options.headers["Authorization"] = "Bearer " + token;
                 }
-                }).then(response => response.json())
-                .then(responseJson => { 
-                    resolve(responseJson);
-                })
-                .catch(err => {
-                    reject(err);
-                });
+                if(data != null){
+                    options.body = JSON.stringify(data);
+                }
+                fetch(params.apiUrl + url, options).then(response => response.json())
+                    .then(responseJson => { 
+                        resolve(responseJson);
+                    })
+                    .catch(err => {
+                        reject(err);
+                    });
+            }, function(err){
+                reject(err);
+            });
         });
     }
 
